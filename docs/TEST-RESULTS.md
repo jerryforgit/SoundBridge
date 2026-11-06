@@ -276,3 +276,28 @@ About 文本在每次切换到「关于」标签时刷新。中英文均已通�
 - 中文：`SoundBridge 0.1 (build 0.1)`、`当前输出：LECOO M3221PL`、
   `App 位置：/Applications/SoundBridge.app`
 - 英文：`Current output: LECOO M3221PL`、`App location: /Applications/SoundBridge.app`
+
+## 2026-11-06 · 登录项最终方案：SMAppService
+
+LaunchAgent 方案实测不符合预期：
+
+- LaunchAgent 只出现在 系统设置 → 通用 → 登录项 → **允许在后台**
+- **登录时打开** 列表里看不到 SoundBridge
+- 卸载后「允许在后台」还可能短暂保留条目
+
+已撤销 LaunchAgent，回到 `SMAppService.mainApp`，并解决 ad-hoc cdhash
+变化导致的旧记录问题：
+
+- 安装包 `preinstall` 在替换 App 之前，以当前登录用户运行旧 App 的
+  `--unregister-login`，注销旧 build 的登录项
+- 新 App 首次启动时，如果 `launchAtLogin` 偏好为 true，自动
+  `register()` 当前 build
+- 卸载器仍调用 `--unregister-login`，覆盖当前 build 的记录
+- App 启动时顺带删除早期 LaunchAgent 的 plist 并 `bootout`
+
+系统设置实测：
+
+- 开启后 **登录时打开** 显示 `SoundBridge`，类型为「应用程序」
+- 关闭 / 注销后 **登录时打开** 中不再显示 SoundBridge
+- **允许在后台** 中没有 SoundBridge
+- BTM 记录为 `Type: app`、`Bundle Identifier: com.jerry.soundbridge`

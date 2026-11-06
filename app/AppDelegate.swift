@@ -40,6 +40,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         loadEQSettings(into: engine.dsp.eq)
         engine.start()
 
+        // 安装/更新会先注销旧 build 的登录项；这里按偏好重新注册当前 build。
+        // 同时清理早期 LaunchAgent 版本留下的文件。
+        LoginItem.reconcile(prefEnabled: defaults.bool(forKey: launchAtLoginKey))
+
         cachedSoundBridgeID = soundBridgeDeviceID()
         createStatusItem()
         updateStatusTitle()
@@ -410,12 +414,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     @objc private func toggleLaunchAtLogin(_ sender: NSMenuItem) {
         do {
-            if LaunchAtLogin.isEnabled {
-                LaunchAtLogin.disable()
+            if LoginItem.isEnabled {
+                try LoginItem.disable()
                 defaults.set(false, forKey: launchAtLoginKey)
                 logger?.log("launch at login disabled")
             } else {
-                try LaunchAtLogin.enable()
+                try LoginItem.enable()
                 defaults.set(true, forKey: launchAtLoginKey)
                 logger?.log("launch at login enabled")
             }
@@ -475,7 +479,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func launchAtLoginEnabled() -> Bool {
-        LaunchAtLogin.isEnabled
+        LoginItem.isEnabled
     }
 
     private func currentOutputDescription() -> String {

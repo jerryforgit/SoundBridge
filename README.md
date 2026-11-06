@@ -160,9 +160,10 @@ tccutil reset Microphone com.jerry.soundbridge
   status menu. The engine rebinds by UID.
 - **Language**: system default, 中文 or English. The control panel is recreated
   when the language changes.
-- **Launch at login**: a per-user `LaunchAgent`
-  (`~/Library/LaunchAgents/com.jerry.soundbridge.plist`) managed from the
-  status menu. It is a plain file, so the uninstaller can always remove it.
+- **Launch at login**: `SMAppService`, so it appears under System Settings →
+  General → Login Items → **Open at Login**. The installer unregisters the old
+  build's item before replacing the app, and the new build re-registers on
+  first launch when the preference is on.
 
 ### Spatial presets
 
@@ -182,9 +183,8 @@ open "packaging/build/Uninstall SoundBridge.pkg"
 sudo installer -pkg "packaging/build/Uninstall SoundBridge.pkg" -target /
 ```
 
-It quits the app, removes its LaunchAgent login item, removes the app, HAL
-plugin, shared memory, preferences and logs, then restarts `coreaudiod` and
-Dock.
+It quits the app, unregisters its login item, removes the app, HAL plugin,
+shared memory, preferences and logs, then restarts `coreaudiod` and Dock.
 SpeakerAmp / BlackHole / MAXHUB are untouched.
 
 ### Manual

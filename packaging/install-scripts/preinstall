@@ -1,10 +1,53 @@
 #!/bin/bash
 set -e
 
-# Quit a running copy before the payload is replaced. Installer runs this
-# before it copies the new app, so this avoids "app in use" failures and
-# lets the new build start cleanly.
+APP="/Applications/SoundBridge.app"
+BUNDLE_ID="com.jerry.soundbridge"
+
+console_user() {
+    local u=""
+    u=$(/usr/bin/stat -f%Su /dev/console 2>/dev/null || true)
+    if [ -z "$u" ] || [ "$u" = "root" ]; then
+        u=$(/usr/sbin/scutil <<< "show State:/Users/ConsoleUser" 2>/dev/null |
+            /usr/bin/awk '/^[[:space:]]*Name[[:space:]]*:/ {print $3; exit}')
+    fi
+    if [ -z "$u" ] || [ "$u" = "root" ]; then
+        u=$(/bin/ps -axo user=,comm= | /usr/bin/awk '$2 ~ /\/Dock$/ {print $1; exit}')
+    fi
+    if [ -z "$u" ] || [ "$u" = "root" ]; then
+        u=$(/usr/bin/who | /usr/bin/awk '$2 == "console" {print $1; exit}')
+    fi
+    printf '%s' "$u"
+}
+
+CONSOLE_USER=$(console_user)
+CONSOLE_UID=""
+USER_HOME=""
+if [ -n "$CONSOLE_USER" ] && [ "$CONSOLE_USER" != "root" ]; then
+    CONSOLE_UID=$(/usr/bin/id -u "$CONSOLE_USER" 2>/dev/null || true)
+    USER_HOME=$(/usr/bin/dscl . -read "/Users/$CONSOLE_USER" NFSHomeDirectory 2>/dev/null |
+        /usr/bin/awk '{print $2}')
+fi
+
+# Quit a running copy before the payload is replaced.
 /usr/bin/pkill -x SoundBridge 2>/dev/null || true
 /bin/sleep 0.5
+
+# Ad-hoc builds change cdhash on every rebuild. Unregister the *old* app's
+# SMAppService item while the old binary is still in place; the new app
+# re-registers on launch if the user had launch-at-login enabled.
+if [ -d "$APP" ] && [ -n "$CONSOLE_UID" ]; then
+    /bin/launchctl asuser "$CONSOLE_UID" /usr/bin/sudo -u "$CONSOLE_USER" \
+        "$APP/Contents/MacOS/SoundBridge" --unregister-login 2>/dev/null || true
+    /bin/sleep 0.3
+fi
+
+# Remove the LaunchAgent used by the short-lived 0.1 development build.
+if [ -n "$CONSOLE_UID" ]; then
+    /bin/launchctl bootout "gui/$CONSOLE_UID/$BUNDLE_ID" 2>/dev/null || true
+fi
+if [ -n "$USER_HOME" ]; then
+    /bin/rm -f "$USER_HOME/Library/LaunchAgents/$BUNDLE_ID.plist"
+fi
 
 exit 0
