@@ -104,7 +104,7 @@ This produces:
 
 ```
 packaging/build/SoundBridge.pkg              # app + HAL plugin
-packaging/build/Uninstall SoundBridge.pkg    # clean uninstall
+packaging/build/Uninstall.SoundBridge.pkg    # clean uninstall
 ```
 
 Install:
@@ -178,9 +178,9 @@ tccutil reset Microphone com.jerry.soundbridge
 ### PKG (recommended)
 
 ```bash
-open "packaging/build/Uninstall SoundBridge.pkg"
+open "packaging/build/Uninstall.SoundBridge.pkg"
 # or
-sudo installer -pkg "packaging/build/Uninstall SoundBridge.pkg" -target /
+sudo installer -pkg "packaging/build/Uninstall.SoundBridge.pkg" -target /
 ```
 
 It quits the app, unregisters its login item, removes the app, HAL plugin,
@@ -293,5 +293,5 @@ UID 唤醒重绑。
 - 唤醒按 UID 重绑，不缓存 `AudioObjectID`
 - 共享内存传输，**不需要麦克风权限**
 - 安装：`./packaging/build.sh` 后打开 `packaging/build/SoundBridge.pkg`
-- 卸载：打开 `packaging/build/Uninstall SoundBridge.pkg`
+- 卸载：打开 `packaging/build/Uninstall.SoundBridge.pkg`
 - SpeakerAmp 不会被卸载，可随时作为回退

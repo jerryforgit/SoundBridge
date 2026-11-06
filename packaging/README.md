@@ -13,7 +13,7 @@ cd /Users/jerry/Syncthing/repos/jerry/SoundBridge
 
 ```
 packaging/build/SoundBridge.pkg             # App + HAL 插件
-packaging/build/Uninstall SoundBridge.pkg   # 彻底卸载
+packaging/build/Uninstall.SoundBridge.pkg   # 彻底卸载
 ```
 
 ## 安装
@@ -36,10 +36,10 @@ sudo installer -pkg "packaging/build/SoundBridge.pkg" -target /
 
 ## 卸载
 
-双击 `Uninstall SoundBridge.pkg`，或：
+双击 `Uninstall.SoundBridge.pkg`，或：
 
 ```bash
-sudo installer -pkg "packaging/build/Uninstall SoundBridge.pkg" -target /
+sudo installer -pkg "packaging/build/Uninstall.SoundBridge.pkg" -target /
 ```
 
 它会：

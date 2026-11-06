@@ -42,7 +42,7 @@ the “device rebuilt twice” case that breaks ID-based routing.
 | File | Size | SHA-256 |
 |---|---|---|
 | `SoundBridge.pkg` | 584 KB | `06365cba48334d7a59cc2788cfcd9b574030114caacda9ed64fecb92e08e5fa3` |
-| `Uninstall SoundBridge.pkg` | 3.6 KB | `c3c657698f1c854edc85078dacd4136c158166669899337d8a0e90e7014dc9ef` |
+| `Uninstall.SoundBridge.pkg` | 3.6 KB | `c3c657698f1c854edc85078dacd4136c158166669899337d8a0e90e7014dc9ef` |
 
 > The app and HAL plugin are ad-hoc signed; the PKGs are unsigned. This is a
 > personal/self-use build. If Gatekeeper blocks a double-click, right-click →
@@ -83,10 +83,10 @@ tccutil reset Microphone com.jerry.soundbridge
 
 ## Uninstall
 
-Download `Uninstall SoundBridge.pkg`, double-click it, or:
+Download `Uninstall.SoundBridge.pkg`, double-click it, or:
 
 ```bash
-sudo installer -pkg "Uninstall SoundBridge.pkg" -target /
+sudo installer -pkg "Uninstall.SoundBridge.pkg" -target /
 ```
 
 It will:
@@ -134,5 +134,5 @@ SoundBridge v0.1 首个公开版本。
 - 中文 / English 可手动切换
 
 安装：双击 `SoundBridge.pkg`，音频会中断 2–3 秒。
-卸载：双击 `Uninstall SoundBridge.pkg`，会删除 App、插件、共享内存、设置和日志。
+卸载：双击 `Uninstall.SoundBridge.pkg`，会删除 App、插件、共享内存、设置和日志。
 SpeakerAmp 不会被卸载，可随时回退。

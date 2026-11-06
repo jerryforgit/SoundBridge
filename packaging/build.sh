@@ -68,25 +68,25 @@ UNINSTALL_ROOT="$OUT/uninstall-root"
 mkdir -p "$UNINSTALL_ROOT/private/tmp"
 : > "$UNINSTALL_ROOT/private/tmp/.soundbridge-uninstall-marker"
 
-echo "== Build Uninstall SoundBridge.pkg =="
+echo "== Build Uninstall.SoundBridge.pkg =="
 pkgbuild \
     --root "$UNINSTALL_ROOT" \
     --identifier "com.jerry.soundbridge.uninstall.pkg" \
     --version "0.1" \
     --scripts "$ROOT/packaging/uninstall-scripts" \
     --install-location "/" \
-    "$OUT/Uninstall SoundBridge.pkg"
+    "$OUT/Uninstall.SoundBridge.pkg"
 
 # Staging roots are not needed after packaging. Leaving them around also
 # gives Installer another candidate path for bundle relocation.
 rm -rf "$INSTALL_ROOT" "$UNINSTALL_ROOT" "$COMPONENT_PLIST"
 
 echo
-ls -lh "$OUT/SoundBridge.pkg" "$OUT/Uninstall SoundBridge.pkg"
+ls -lh "$OUT/SoundBridge.pkg" "$OUT/Uninstall.SoundBridge.pkg"
 echo
-shasum -a 256 "$OUT/SoundBridge.pkg" "$OUT/Uninstall SoundBridge.pkg"
+shasum -a 256 "$OUT/SoundBridge.pkg" "$OUT/Uninstall.SoundBridge.pkg"
 echo
 echo "Install:"
 echo "  sudo installer -pkg \"$OUT/SoundBridge.pkg\" -target /"
 echo "Uninstall:"
-echo "  sudo installer -pkg \"$OUT/Uninstall SoundBridge.pkg\" -target /"
+echo "  sudo installer -pkg \"$OUT/Uninstall.SoundBridge.pkg\" -target /"
