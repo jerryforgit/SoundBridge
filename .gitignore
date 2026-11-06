@@ -1,0 +1,24 @@
+.DS_Store
+**/.DS_Store
+
+# Build outputs
+build/
+app/build/
+driver/build/
+packaging/build/
+engine/engine
+tools/audiodefault
+wakespike/wakespike
+
+# Packages / installers
+*.pkg
+*.dmg
+
+# Local reference screenshots (third-party app UI)
+docs/reference/
+
+# Xcode / editor
+*.xcuserstate
+xcuserdata/
+.idea/
+.vscode/

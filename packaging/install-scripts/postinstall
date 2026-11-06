@@ -1,0 +1,19 @@
+#!/bin/bash
+set -e
+
+APP="/Applications/SoundBridge.app"
+DRIVER="/Library/Audio/Plug-Ins/HAL/SoundBridge.driver"
+
+# Quit the old app if it is running.
+/usr/bin/pkill -x SoundBridge 2>/dev/null || true
+/bin/sleep 0.5
+
+/usr/sbin/chown -R root:wheel "$APP" "$DRIVER"
+/bin/chmod -R 755 "$APP" "$DRIVER"
+
+# Reload the HAL plugin.
+/usr/bin/killall coreaudiod 2>/dev/null || true
+# Refresh Launchpad/Dock icon.
+/usr/bin/killall Dock 2>/dev/null || true
+
+exit 0

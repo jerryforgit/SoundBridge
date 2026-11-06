@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+APP="/Applications/SoundBridge.app"
+DRIVER="/Library/Audio/Plug-Ins/HAL/SoundBridge.driver"
+
+CONSOLE_USER=$(/usr/bin/stat -f%Su /dev/console 2>/dev/null || echo "")
+CONSOLE_UID=""
+if [ -n "$CONSOLE_USER" ] && [ "$CONSOLE_USER" != "root" ]; then
+    CONSOLE_UID=$(/usr/bin/id -u "$CONSOLE_USER" 2>/dev/null || true)
+fi
+
+# Quit the app.
+/usr/bin/pkill -x SoundBridge 2>/dev/null || true
+/bin/sleep 1
+
+# Let the app unregister its own SMAppService login item before we delete it.
+if [ -d "$APP" ] && [ -n "$CONSOLE_UID" ]; then
+    /bin/launchctl asuser "$CONSOLE_UID" /usr/bin/open -a "$APP" --args --unregister-login 2>/dev/null || true
+    /bin/sleep 1
+fi
+
+# Remove driver, app, and shared memory.
+/bin/rm -rf "$DRIVER"
+/bin/rm -rf "$APP"
+/bin/rm -f "/tmp/soundbridge_ring_v1"
+
+# Remove user preferences and logs.
+if [ -n "$CONSOLE_USER" ] && [ "$CONSOLE_USER" != "root" ]; then
+    USER_HOME=$(/usr/bin/dscl . -read "/Users/$CONSOLE_USER" NFSHomeDirectory 2>/dev/null | /usr/bin/awk '{print $2}')
+    if [ -n "$USER_HOME" ]; then
+        /bin/rm -rf "$USER_HOME/Library/Logs/SoundBridge"
+        /bin/rm -f "$USER_HOME/Library/Preferences/com.jerry.soundbridge.plist"
+    fi
+    if [ -n "$CONSOLE_UID" ]; then
+        /bin/launchctl asuser "$CONSOLE_UID" /usr/bin/sudo -u "$CONSOLE_USER" \
+            /usr/bin/defaults delete com.jerry.soundbridge 2>/dev/null || true
+    fi
+fi
+
+# Remove the uninstaller marker payload.
+/bin/rm -f "/private/tmp/.soundbridge-uninstall-marker"
+
+# Restart audio and refresh Launchpad/Dock.
+/usr/bin/killall coreaudiod 2>/dev/null || true
+/usr/bin/killall Dock 2>/dev/null || true
+
+exit 0
