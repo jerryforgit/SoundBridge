@@ -259,3 +259,20 @@ LaunchAgent 启动路径也验证过：
 - `launchctl print` 显示 `state = running`
 - App 以 `--background` 启动，只驻留菜单栏，不打开控制面板
 - `--login off` 卸载 job 并删除 plist
+
+## 2026-11-06 · About 页改为动态信息
+
+原来 About 页写死了 `/Users/jerry/Syncthing/repos/jerry/SoundBridge`、
+`LECOO M3221PL` 和版本号。现在：
+
+- 版本 / build：读取 `Info.plist` 的 `CFBundleShortVersionString` / `CFBundleVersion`
+- 当前输出：按引擎的 `selectedOutputUID` 解析设备名（`findDevice` + `deviceName`）
+- App 位置：`Bundle.main.bundlePath`
+- 项目主页：GitHub 仓库链接
+- 安装 / 卸载：改为两个 PKG 的名称
+
+About 文本在每次切换到「关于」标签时刷新。中英文均已通过辅助功能读取验证：
+
+- 中文：`SoundBridge 0.1 (build 0.1)`、`当前输出：LECOO M3221PL`、
+  `App 位置：/Applications/SoundBridge.app`
+- 英文：`Current output: LECOO M3221PL`、`App location: /Applications/SoundBridge.app`

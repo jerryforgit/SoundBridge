@@ -14,8 +14,11 @@ final class ControlPanelWindowController: NSWindowController, NSWindowDelegate, 
     private let spatialTab: NSTabViewItem
     private let eqTab: NSTabViewItem
     private let aboutTab: NSTabViewItem
+    private let outputDescription: () -> String
+    private var aboutTextView: NSTextView?
 
-    init(dsp: SpatialDSP) {
+    init(dsp: SpatialDSP, outputDescription: @escaping () -> String) {
+        self.outputDescription = outputDescription
         spatialController = SpatialWindowController(dsp: dsp)
         eqController = EQWindowController(eq: dsp.eq)
 
@@ -88,67 +91,88 @@ final class ControlPanelWindowController: NSWindowController, NSWindowDelegate, 
         textView.textColor = .labelColor
         textView.textContainerInset = NSSize(width: 24, height: 24)
         textView.string = aboutText()
+        aboutTextView = textView
         scroll.documentView = textView
         return scroll
     }
 
+    private func refreshAbout() {
+        aboutTextView?.string = aboutText()
+    }
+
     private func aboutText() -> String {
-        L(
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "0.1"
+        let build = info?["CFBundleVersion"] as? String ?? "1"
+        let appPath = Bundle.main.bundlePath
+        let output = outputDescription()
+
+        return L(
             """
-            SoundBridge 0.1
+            SoundBridge \(version) (build \(build))
 
             一个 macOS 菜单栏音频工具，用来替代 SpeakerAmp。
 
             架构：
             • 虚拟输出设备 SoundBridge（AudioServerPlugin HAL 驱动）
-            • 引擎按 UID 把音频转发到当前显示器（LECOO M3221PL）
+            • 引擎按 UID 把音频转发到当前显示器
             • 原生音量键 / 系统 OSD / 静音键
             • 10 段 EQ + look-ahead 限幅器
             • AUMatrixReverb（Large Hall）空间感，已与 SpeakerAmp Hall 50% 校准
             • 唤醒时按 UID 重绑，处理设备重建两次的抖动
 
+            当前输出：
+            \(output)
+
             技术栈：
             AudioServerPlugIn (C++ / libASPL) + Swift + CoreAudio + AUMatrixReverb
 
-            项目位置：
-            /Users/jerry/Syncthing/repos/jerry/SoundBridge
+            项目主页：
+            https://github.com/jerryforgit/SoundBridge
+
+            App 位置：
+            \(appPath)
 
             日志：
             ~/Library/Logs/SoundBridge/engine.log
 
             安装 / 卸载：
-            driver/build.sh      构建 HAL 插件
-            scripts/install.sh   安装插件（需要 sudo，会重启 coreaudiod）
-            scripts/uninstall.sh 卸载插件并恢复系统音频
+            SoundBridge.pkg             安装 App + HAL 插件
+            Uninstall SoundBridge.pkg   彻底卸载
 
             SpeakerAmp 仍然保留，可随时切回作为回退。
             """,
             """
-            SoundBridge 0.1
+            SoundBridge \(version) (build \(build))
 
             A macOS menu bar audio tool built to replace SpeakerAmp.
 
             Architecture:
             • Virtual output device SoundBridge (AudioServerPlugin HAL driver)
-            • Engine forwards audio to the current display by UID (LECOO M3221PL)
+            • Engine forwards audio to the current display by UID
             • Native volume keys / system OSD / mute
             • 10-band EQ + look-ahead limiter
             • AUMatrixReverb (Large Hall), calibrated against SpeakerAmp Hall 50%
             • UID-based rebinding on wake, including double device rebuilds
 
+            Current output:
+            \(output)
+
             Stack:
             AudioServerPlugIn (C++ / libASPL) + Swift + CoreAudio + AUMatrixReverb
 
             Project:
-            /Users/jerry/Syncthing/repos/jerry/SoundBridge
+            https://github.com/jerryforgit/SoundBridge
+
+            App location:
+            \(appPath)
 
             Log:
             ~/Library/Logs/SoundBridge/engine.log
 
-            Build / install:
-            driver/build.sh      build the HAL plugin
-            scripts/install.sh   install the plugin (sudo, restarts coreaudiod)
-            scripts/uninstall.sh uninstall and restore system audio
+            Install / uninstall:
+            SoundBridge.pkg             install app + HAL plugin
+            Uninstall SoundBridge.pkg   clean uninstall
 
             SpeakerAmp remains installed as a fallback.
             """
@@ -184,6 +208,7 @@ final class ControlPanelWindowController: NSWindowController, NSWindowDelegate, 
         }
         tabView.selectTabViewItem(item)
         window?.setContentSize(size(for: tab))
+        if tab == .about { refreshAbout() }
     }
 
     func reloadSpatial() {
@@ -196,7 +221,9 @@ final class ControlPanelWindowController: NSWindowController, NSWindowDelegate, 
 
     func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
         guard let tabViewItem else { return }
-        window?.setContentSize(size(for: tab(for: tabViewItem)))
+        let tab = tab(for: tabViewItem)
+        window?.setContentSize(size(for: tab))
+        if tab == .about { refreshAbout() }
     }
 
     func windowWillClose(_ notification: Notification) {

@@ -41,8 +41,8 @@ the “device rebuilt twice” case that breaks ID-based routing.
 
 | File | Size | SHA-256 |
 |---|---|---|
-| `SoundBridge.pkg` | 584 KB | `2a9167a9cc970cc7bee83647de98cf5931b5d737897b1d8241a9d86a57ae09e2` |
-| `Uninstall SoundBridge.pkg` | 3.6 KB | `51613fdc319893f5a3c33e86ee3bf7c988a58f1840053c63148c1143fe9b8dc8` |
+| `SoundBridge.pkg` | 586 KB | `f86e3cf36d7aec6f7d2b5f93303da51631da233bf15d679427052a3e06cd8c63` |
+| `Uninstall SoundBridge.pkg` | 3.6 KB | `5ccb5e9bc44568ed8352bfb2de7721495a5da990b9ed80f3f723df1e3c100b41` |
 
 > The app and HAL plugin are ad-hoc signed; the PKGs are unsigned. This is a
 > personal/self-use build. If Gatekeeper blocks a double-click, right-click →

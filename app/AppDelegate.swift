@@ -336,7 +336,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             enableDefaultOutput()
         }
         if controlPanel == nil {
-            controlPanel = ControlPanelWindowController(dsp: engine.dsp)
+            controlPanel = ControlPanelWindowController(dsp: engine.dsp) { [weak self] in
+                self?.currentOutputDescription() ?? L("未连接", "Not connected")
+            }
         }
         controlPanel?.show(tab: tab)
     }
@@ -474,6 +476,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func launchAtLoginEnabled() -> Bool {
         LaunchAtLogin.isEnabled
+    }
+
+    private func currentOutputDescription() -> String {
+        guard let engine else { return L("未连接", "Not connected") }
+        let uid = engine.selectedOutputUID
+        if let id = findDevice(uid: uid), let name = deviceName(id) {
+            return name
+        }
+        return L("未连接", "Not connected")
     }
 
     private func loadSpatialSettings(into dsp: SpatialDSP) {
