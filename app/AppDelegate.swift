@@ -1,7 +1,6 @@
 import AppKit
 import Foundation
 import CoreAudio
-import ServiceManagement
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
@@ -24,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         let isDefaultLaunch = (notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool) ?? true
+        let backgroundLaunch = CommandLine.arguments.contains("--background")
 
         logger = Logger(path: "~/Library/Logs/SoundBridge/engine.log")
         logger.log("==== SoundBridge.app launched ====")
@@ -69,7 +69,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         // 用户从 Launchpad/Dock/open 启动时打开控制面板；
         // 登录项启动（非 default launch）只驻留菜单栏。
-        if isDefaultLaunch {
+        if isDefaultLaunch && !backgroundLaunch {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
                 self?.showControlPanel(tab: .spatial)
             }
@@ -407,14 +407,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func toggleLaunchAtLogin(_ sender: NSMenuItem) {
-        guard #available(macOS 13.0, *) else { return }
         do {
-            if SMAppService.mainApp.status == .enabled {
-                try SMAppService.mainApp.unregister()
+            if LaunchAtLogin.isEnabled {
+                LaunchAtLogin.disable()
                 defaults.set(false, forKey: launchAtLoginKey)
                 logger?.log("launch at login disabled")
             } else {
-                try SMAppService.mainApp.register()
+                try LaunchAtLogin.enable()
                 defaults.set(true, forKey: launchAtLoginKey)
                 logger?.log("launch at login enabled")
             }
@@ -474,10 +473,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func launchAtLoginEnabled() -> Bool {
-        if #available(macOS 13.0, *) {
-            return SMAppService.mainApp.status == .enabled
-        }
-        return defaults.bool(forKey: launchAtLoginKey)
+        LaunchAtLogin.isEnabled
     }
 
     private func loadSpatialSettings(into dsp: SpatialDSP) {

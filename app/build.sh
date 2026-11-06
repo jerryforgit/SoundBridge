@@ -30,6 +30,7 @@ xcrun swiftc -O \
     EQWindowController.swift \
     ControlPanelWindowController.swift \
     Localization.swift \
+    LaunchAtLogin.swift \
     main.swift
 
 cp Info.plist "$APP/Contents/Info.plist"

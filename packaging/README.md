@@ -45,7 +45,7 @@ sudo installer -pkg "packaging/build/Uninstall SoundBridge.pkg" -target /
 它会：
 
 - 退出 App
-- 让 App 先注销自己的 `SMAppService` 登录项
+- 卸载 LaunchAgent 登录项（`~/Library/LaunchAgents/com.jerry.soundbridge.plist`）
 - 删除 HAL 插件
 - 删除 `/Applications/SoundBridge.app`
 - 删除 `/tmp/soundbridge_ring_v1`

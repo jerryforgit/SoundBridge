@@ -34,15 +34,15 @@ the “device rebuilt twice” case that breaks ID-based routing.
   - launch at login, engine log
 - **Conventional PKG install / uninstall**
   - install app + HAL plugin, restart `coreaudiod`
-  - separate uninstall PKG removes app, plugin, shared memory, preferences and
-    logs, and unregisters the login item
+  - separate uninstall PKG removes app, plugin, LaunchAgent login item, shared
+    memory, preferences and logs
 
 ## Assets
 
 | File | Size | SHA-256 |
 |---|---|---|
-| `SoundBridge.pkg` | 576 KB | `c0008634dc663189a6cacef252af0ecc8f34df882364d7e15260fb172397f5ab` |
-| `Uninstall SoundBridge.pkg` | 3.2 KB | `79ce0f5acc5d4712ece2c2a8bf4c41d7398347daa2452295c00f9954489ca283` |
+| `SoundBridge.pkg` | 584 KB | `2a9167a9cc970cc7bee83647de98cf5931b5d737897b1d8241a9d86a57ae09e2` |
+| `Uninstall SoundBridge.pkg` | 3.6 KB | `51613fdc319893f5a3c33e86ee3bf7c988a58f1840053c63148c1143fe9b8dc8` |
 
 > The app and HAL plugin are ad-hoc signed; the PKGs are unsigned. This is a
 > personal/self-use build. If Gatekeeper blocks a double-click, right-click →
@@ -92,7 +92,7 @@ sudo installer -pkg "Uninstall SoundBridge.pkg" -target /
 It will:
 
 - quit the app
-- unregister the app's login item
+- remove the app's LaunchAgent login item
 - remove the HAL plugin and `/Applications/SoundBridge.app`
 - remove `/tmp/soundbridge_ring_v1`, logs and preferences
 - restart `coreaudiod` and Dock

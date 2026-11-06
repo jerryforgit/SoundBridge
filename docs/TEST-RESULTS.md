@@ -180,7 +180,7 @@ UID `30A30132-0000-0000-0120-0104B5472878`。
 - [x] 新泵入逻辑下做 1–2 次唤醒复测
 - [x] 连续播放 2 小时，观察 CPU / 内存 / ring
 - [x] 卸载测试：移除插件后系统音频恢复正常
-- [ ] PKG 卸载包测试（删除 App + 插件 + 设置 + 日志）
+- [x] PKG 卸载包测试（删除 App + 插件 + 设置 + 日志 + 登录项）
 
 ## 2026-11-06 · 2 小时 soak
 
@@ -221,3 +221,41 @@ UID `30A30132-0000-0000-0120-0104B5472878`。
 
 
 
+## 2026-11-06 · PKG 卸载验证 + LaunchAgent 登录项
+
+第一次卸载测试发现两个遗漏：
+
+- `~/Library/Logs/SoundBridge` 和偏好设置未删除
+- 登录项未注销
+
+原因：这台机器 `/dev/console` 属主是 `root`，卸载脚本用
+`stat -f%Su /dev/console` 判断当前用户时得到 `root`，跳过了用户级清理。
+
+修复：
+
+- 用户检测改为依次尝试：`/dev/console` → `scutil ConsoleUser` →
+  Dock 进程属主 → `who`
+- 登录项从 `SMAppService` 改为 LaunchAgent：
+  `~/Library/LaunchAgents/com.jerry.soundbridge.plist`
+  - SMAppService 按 cdhash 记录，ad-hoc 每次重建都会留下旧记录，卸载器无法清理
+  - LaunchAgent 是普通文件，卸载器可直接 `launchctl bootout` + 删除
+- 卸载器同时保留旧版 `--unregister-login` 调用，兼容早期 SMAppService 记录
+
+重新安装 → 启用登录项 → 卸载，结果：
+
+- `/Applications/SoundBridge.app`：已删除
+- `/Library/Audio/Plug-Ins/HAL/SoundBridge.driver`：已删除
+- `~/Library/LaunchAgents/com.jerry.soundbridge.plist`：已删除
+- `launchctl print gui/501/com.jerry.soundbridge`：不存在
+- `~/Library/Logs/SoundBridge`：已删除
+- `~/Library/Preferences/com.jerry.soundbridge.plist`：已删除
+- `/tmp/soundbridge_ring_v1`：已删除
+- 默认输出恢复 SpeakerAmp
+- SpeakerAmp / Syncthing 的登录项不受影响
+
+LaunchAgent 启动路径也验证过：
+
+- `--login on` 生成 plist 并 `bootstrap`
+- `launchctl print` 显示 `state = running`
+- App 以 `--background` 启动，只驻留菜单栏，不打开控制面板
+- `--login off` 卸载 job 并删除 plist
