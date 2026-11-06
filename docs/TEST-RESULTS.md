@@ -177,9 +177,46 @@ UID `30A30132-0000-0000-0120-0104B5472878`。
 - [x] 空间感 Hall（AUMatrixReverb Large Hall，wet 50 校准）
 - [x] 最终 App 10 连测（共享内存版本，10/10）
 - [x] 彻底去掉麦克风权限 / 橙色麦克风
-- [ ] 新泵入逻辑下做 1–2 次唤醒复测
-- [ ] 连续播放 2 小时，观察 CPU / 内存 / ring
-- [ ] 卸载测试：移除插件后系统音频恢复正常
+- [x] 新泵入逻辑下做 1–2 次唤醒复测
+- [x] 连续播放 2 小时，观察 CPU / 内存 / ring
+- [x] 卸载测试：移除插件后系统音频恢复正常
+- [ ] PKG 卸载包测试（删除 App + 插件 + 设置 + 日志）
+
+## 2026-11-06 · 2 小时 soak
+
+- 17:43:37 → 19:46:57，−60 dB 粉红噪声循环
+- RSS 19.6 MB → 19.8 MB（+224 KB）
+- CPU 2.0% → 2.5%（AUMatrixReverb 是主要成本）
+- 697 次状态采样：ring min 114 / median 512 / max 838
+- ring < 64 帧：0 次；无 `OUTPUT STOPPED`、无 watchdog 错误、无 `INPUT STARTED`
+- 进程 PID 全程不变
+
+## 2026-11-06 · PKG 安装修复 + 验证
+
+第一次 `SoundBridge.pkg` 双击安装失败：
+
+- Installer 把 `SoundBridge.app` 重定位到构建目录
+  `packaging/build/install-root/Applications/SoundBridge.app`
+- `postinstall` 的 `chown /Applications/SoundBridge.app` 因此失败
+
+修复：
+
+- `pkgbuild --analyze` 生成 component plist，两个 bundle 都设置
+  `BundleIsRelocatable=false`
+- 新增 `preinstall`：安装前 `pkill -x SoundBridge`
+- `postinstall` 先检查 App/插件是否存在，再 `chown`/`chmod`
+- 构建完成后删除 staging root，避免再成为重定位候选
+
+重新安装验证：
+
+- Installer 返回 `The install was successful.`
+- `/Applications/SoundBridge.app` 与
+  `/Library/Audio/Plug-Ins/HAL/SoundBridge.driver` 均在正确路径
+- 两者 `codesign -v` 通过
+- 系统设备列表出现 `SoundBridge`，默认输出成功切换
+- App 启动后 `OUTPUT STARTED id=54`，`input=shared`
+- 440 Hz 测试：ring 546，无麦克风权限/无 input
+
 
 
 

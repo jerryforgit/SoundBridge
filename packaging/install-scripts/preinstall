@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+# Quit a running copy before the payload is replaced. Installer runs this
+# before it copies the new app, so this avoids "app in use" failures and
+# lets the new build start cleanly.
+/usr/bin/pkill -x SoundBridge 2>/dev/null || true
+/bin/sleep 0.5
+
+exit 0
