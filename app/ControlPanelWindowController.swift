@@ -5,22 +5,26 @@ final class ControlPanelWindowController: NSWindowController, NSWindowDelegate, 
     enum Tab {
         case spatial
         case equalizer
+        case shortcuts
         case about
     }
 
     private let spatialController: SpatialWindowController
     private let eqController: EQWindowController
+    private let shortcutsController: ShortcutsWindowController
     private let tabView: NSTabView
     private let spatialTab: NSTabViewItem
     private let eqTab: NSTabViewItem
+    private let shortcutsTab: NSTabViewItem
     private let aboutTab: NSTabViewItem
     private let outputDescription: () -> String
     private var aboutTextView: NSTextView?
 
-    init(dsp: SpatialDSP, outputDescription: @escaping () -> String) {
+    init(dsp: SpatialDSP, outputDescription: @escaping () -> String, hotKeys: HotKeyManager) {
         self.outputDescription = outputDescription
         spatialController = SpatialWindowController(dsp: dsp)
         eqController = EQWindowController(eq: dsp.eq)
+        shortcutsController = ShortcutsWindowController(hotKeys: hotKeys)
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 540, height: 450),
@@ -36,6 +40,7 @@ final class ControlPanelWindowController: NSWindowController, NSWindowDelegate, 
         tabView = NSTabView(frame: NSRect(x: 0, y: 0, width: 540, height: 450))
         spatialTab = NSTabViewItem(identifier: "spatial")
         eqTab = NSTabViewItem(identifier: "equalizer")
+        shortcutsTab = NSTabViewItem(identifier: "shortcuts")
         aboutTab = NSTabViewItem(identifier: "about")
 
         super.init(window: window)
@@ -68,6 +73,13 @@ final class ControlPanelWindowController: NSWindowController, NSWindowDelegate, 
             eqTab.view = view
         }
         tabView.addTabViewItem(eqTab)
+
+        shortcutsTab.label = L("快捷键", "Shortcuts")
+        if let view = shortcutsController.window?.contentView {
+            view.autoresizingMask = [.width, .height]
+            shortcutsTab.view = view
+        }
+        tabView.addTabViewItem(shortcutsTab)
 
         aboutTab.label = L("关于", "About")
         aboutTab.view = makeAboutView()
@@ -185,6 +197,8 @@ final class ControlPanelWindowController: NSWindowController, NSWindowDelegate, 
             return NSSize(width: 540, height: 450)
         case .equalizer:
             return NSSize(width: 780, height: 480)
+        case .shortcuts:
+            return NSSize(width: 540, height: 430)
         case .about:
             return NSSize(width: 580, height: 470)
         }
@@ -192,6 +206,7 @@ final class ControlPanelWindowController: NSWindowController, NSWindowDelegate, 
 
     private func tab(for item: NSTabViewItem) -> Tab {
         if item == eqTab { return .equalizer }
+        if item == shortcutsTab { return .shortcuts }
         if item == aboutTab { return .about }
         return .spatial
     }
@@ -204,6 +219,7 @@ final class ControlPanelWindowController: NSWindowController, NSWindowDelegate, 
         switch tab {
         case .spatial: item = spatialTab
         case .equalizer: item = eqTab
+        case .shortcuts: item = shortcutsTab
         case .about: item = aboutTab
         }
         tabView.selectTabViewItem(item)

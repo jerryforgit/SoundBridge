@@ -30,6 +30,8 @@ physical route is resolved by **UID**, never by a cached `AudioObjectID`.
   Accessibility permissions or media-key interception
 - 10-band peaking EQ (50 Hz – 15 kHz, ±12 dB)
 - Pre-amp gain −15…+15 dB, applied before the EQ and protected by the limiter
+- Configurable global shortcuts for volume up, volume down and mute
+  (Carbon `RegisterEventHotKey`, no Accessibility permission)
 - Spatial effect: M/S widening, crossfeed, early reflections and Apple
   `AUMatrixReverb` (Large Hall), calibrated against SpeakerAmp Hall 50%
 - Look-ahead limiter
@@ -155,6 +157,7 @@ tccutil reset Microphone com.jerry.soundbridge
   - **Spatial**: preset, width, depth, reverb, pre-amp gain, A/B bypass,
     limiter
   - **Equalizer**: 10 vertical bands, presets, bypass, Flat reset
+  - **Shortcuts**: volume up, volume down and mute
   - **About**: project/architecture notes
 - **Volume keys / OSD**: native, because the virtual device implements the
   standard volume properties
@@ -174,6 +177,19 @@ tccutil reset Microphone com.jerry.soundbridge
 - `SpeakerAmp (Medium Hall)` — same AU, Medium Hall, for A/B
 - `Hall (Schroeder)` — earlier built-in approximation
 - Standard / Movie / Music / Night — lighter built-in spatial settings
+
+### Global shortcuts
+
+![Shortcuts](docs/images/shortcuts.png)
+
+- **Volume Up**, **Volume Down** (1/16 = 6.25% per press) and **Mute**
+- click a recorder button, then press the key combination
+- `Delete` clears the shortcut, `Esc` cancels recording
+- shortcuts are off by default; native volume keys/OSD still work unchanged
+- registered with Carbon `RegisterEventHotKey`, so **no Accessibility
+  permission** is needed
+- custom shortcuts do not trigger the system OSD; the menu bar percentage
+  updates instead
 
 ## Uninstall
 
@@ -274,6 +290,8 @@ right-click the package and choose Open, or use `sudo installer`.
   512 frames
 - Pre-amp gain: −6 dB measured 0.5012×, +6 dB measured 1.9953×; +15 dB is
   limited to −1 dBFS by the look-ahead limiter
+- Shortcuts: recording, Carbon registration, volume ±/mute actions and
+  persistence verified; no Accessibility permission requested
 - Login item appears under **Open at Login** and is removed on uninstall
 - Uninstall removes driver/device/process and restores system audio
 - No microphone permission or orange microphone indicator
@@ -296,6 +314,7 @@ UID 唤醒重绑。
 
 - 插件与 App 分离：HAL 插件负责虚拟设备和共享内存，App 负责 DSP 和转发
 - 前置增益 −15…+15 dB（EQ 前应用，限幅器保护）
+- 可录制全局快捷键：音量 +、音量 −、静音（Carbon，不需要辅助功能权限）
 - 唤醒按 UID 重绑，不缓存 `AudioObjectID`
 - 共享内存传输，**不需要麦克风权限**
 - 安装：`./packaging/build.sh` 后打开 `packaging/build/SoundBridge.pkg`

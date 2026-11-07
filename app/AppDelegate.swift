@@ -13,6 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var previousDefaultUID: String?
     private var cachedSoundBridgeID: AudioDeviceID?
     private var controlPanel: ControlPanelWindowController?
+    private var hotKeys: HotKeyManager!
     private var lastStatusSymbol = ""
 
     private let defaults = UserDefaults.standard
@@ -43,6 +44,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // 安装/更新会先注销旧 build 的登录项；这里按偏好重新注册当前 build。
         // 同时清理早期 LaunchAgent 版本留下的文件。
         LoginItem.reconcile(prefEnabled: defaults.bool(forKey: launchAtLoginKey))
+
+        hotKeys = HotKeyManager()
+        hotKeys.onAction = { [weak self] action in
+            guard let self else { return }
+            switch action {
+            case .volumeUp:
+                self.adjustVolume(by: 1.0 / 16.0)
+            case .volumeDown:
+                self.adjustVolume(by: -1.0 / 16.0)
+            case .mute:
+                self.toggleMuteFromHotKey()
+            }
+        }
 
         cachedSoundBridgeID = soundBridgeDeviceID()
         createStatusItem()
@@ -218,6 +232,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         panelItem.target = self
         menu.addItem(panelItem)
 
+        let shortcutsItem = NSMenuItem(title: L("快捷键…", "Shortcuts…"),
+                                       action: #selector(openShortcuts(_:)),
+                                       keyEquivalent: "")
+        shortcutsItem.target = self
+        menu.addItem(shortcutsItem)
+
         let bypassItem = NSMenuItem(title: L("空间感旁路", "Spatial Bypass"),
                                     action: #selector(toggleSpatialBypass(_:)),
                                     keyEquivalent: "")
@@ -323,8 +343,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         updateStatusTitle()
     }
 
+    private func adjustVolume(by delta: Float32) {
+        guard soundBridgeDeviceID() != nil else { return }
+        if getSoundBridgeMute() {
+            _ = setSoundBridgeMute(false)
+        }
+        let current = getSoundBridgeVolume() ?? 1.0
+        let value = min(1.0, max(0.0, current + delta))
+        _ = setSoundBridgeVolume(value)
+        updateStatusTitle()
+        logger?.log("hotkey: volume \(Int((value * 100).rounded()))%")
+    }
+
+    private func toggleMuteFromHotKey() {
+        guard soundBridgeDeviceID() != nil else { return }
+        let muted = getSoundBridgeMute()
+        _ = setSoundBridgeMute(!muted)
+        updateStatusTitle()
+        logger?.log("hotkey: mute \(!muted)")
+    }
+
     @objc private func openControlPanel(_ sender: NSMenuItem) {
         showControlPanel(tab: .spatial)
+    }
+
+    @objc private func openShortcuts(_ sender: NSMenuItem) {
+        showControlPanel(tab: .shortcuts)
     }
 
     @objc private func openSpatial(_ sender: NSMenuItem) {
@@ -340,9 +384,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             enableDefaultOutput()
         }
         if controlPanel == nil {
-            controlPanel = ControlPanelWindowController(dsp: engine.dsp) { [weak self] in
-                self?.currentOutputDescription() ?? L("未连接", "Not connected")
-            }
+            controlPanel = ControlPanelWindowController(
+                dsp: engine.dsp,
+                outputDescription: { [weak self] in
+                    self?.currentOutputDescription() ?? L("未连接", "Not connected")
+                },
+                hotKeys: hotKeys)
         }
         controlPanel?.show(tab: tab)
     }

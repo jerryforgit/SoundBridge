@@ -18,6 +18,7 @@ xcrun swiftc -O \
     -framework CoreAudio \
     -framework AudioToolbox \
     -framework ServiceManagement \
+    -framework Carbon \
     -o "$BIN" \
     ../engine/Engine.swift \
     ../engine/DSP.swift \
@@ -30,6 +31,8 @@ xcrun swiftc -O \
     EQWindowController.swift \
     ControlPanelWindowController.swift \
     Localization.swift \
+    Shortcuts.swift \
+    ShortcutsWindowController.swift \
     LoginItem.swift \
     main.swift
 

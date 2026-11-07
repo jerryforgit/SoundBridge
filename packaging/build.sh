@@ -58,7 +58,7 @@ pkgbuild \
     --root "$INSTALL_ROOT" \
     --component-plist "$COMPONENT_PLIST" \
     --identifier "com.jerry.soundbridge.pkg" \
-    --version "0.2" \
+    --version "0.3" \
     --scripts "$ROOT/packaging/install-scripts" \
     --install-location "/" \
     "$OUT/SoundBridge.pkg"
@@ -72,7 +72,7 @@ echo "== Build Uninstall.SoundBridge.pkg =="
 pkgbuild \
     --root "$UNINSTALL_ROOT" \
     --identifier "com.jerry.soundbridge.uninstall.pkg" \
-    --version "0.2" \
+    --version "0.3" \
     --scripts "$ROOT/packaging/uninstall-scripts" \
     --install-location "/" \
     "$OUT/Uninstall.SoundBridge.pkg"

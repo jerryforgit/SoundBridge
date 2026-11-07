@@ -341,3 +341,36 @@ v0.2 安装后验证：
 - Gain 滑块显示 `+0 dB`，`output.gainDB = 0`
 - 登录项 `--login status` = enabled
 - 440 Hz 测试 ring 572–646
+
+## 2026-11-07 · 全局快捷键（v0.3）
+
+在「快捷键」页加入三个可录制动作：
+
+- 音量 +：每次 +1/16（6.25%）
+- 音量 −：每次 −1/16
+- 静音：切换
+
+实现：
+
+- `ShortcutRecorderButton` 录制组合键，Delete 清除，Esc 取消
+- `HotKeyManager` 用 Carbon `RegisterEventHotKey` 注册，不需要辅助功能权限
+- 冲突时保留旧设置并显示提示
+- 保存为 JSON 到 `shortcut.volumeUp` / `shortcut.volumeDown` / `shortcut.mute`
+
+UI / 功能验证：
+
+- 录制 `⌃⌥↑`、`⌃⌥↓`、`⌃⌥M`，按钮标题正确显示
+- 重启 App 后三个快捷键仍然显示并生效
+- 实际按键日志：
+
+```
+16:09:44 hotkey: volume 13%
+16:09:45 hotkey: volume 6%
+16:09:46 hotkey: mute true
+16:10:22 hotkey: mute true
+16:10:40 hotkey: mute false
+```
+
+- 清除全部后 `defaults` 中不再有 `shortcut.*`
+- 截图：`docs/images/shortcuts.png`
+- 测试结束后已清空快捷键，默认保持未设置
