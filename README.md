@@ -1,5 +1,7 @@
 # SoundBridge
 
+**English** | [简体中文](README.zh-CN.md)
+
 A macOS menu bar audio bridge for HDMI / DisplayPort displays.
 
 SoundBridge creates a virtual output device, gives it native macOS volume and
@@ -41,7 +43,7 @@ physical route is resolved by **UID**, never by a cached `AudioObjectID`.
 - Shared-memory audio transport between plugin and engine: **no microphone
   permission**, no orange microphone indicator
 - Menu bar icon with volume-following sound waves, control panel with
-  Spatial / Equalizer / About tabs
+  Spatial / Equalizer / Shortcuts / About tabs
 - Chinese and English UI, following the system language or selectable manually
 - Optional launch at login
 
@@ -306,17 +308,4 @@ MIT. See [`LICENSE`](LICENSE) and
 
 ---
 
-## 中文简介
-
-SoundBridge 是一个 macOS 菜单栏音频工具：创建虚拟输出设备，把声音转发到显示器
-的 HDMI / DisplayPort 端点，同时提供原生音量键 / OSD、10 段 EQ、空间感和
-UID 唤醒重绑。
-
-- 插件与 App 分离：HAL 插件负责虚拟设备和共享内存，App 负责 DSP 和转发
-- 前置增益 −15…+15 dB（EQ 前应用，限幅器保护）
-- 可录制全局快捷键：音量 +、音量 −、静音（Carbon，不需要辅助功能权限）
-- 唤醒按 UID 重绑，不缓存 `AudioObjectID`
-- 共享内存传输，**不需要麦克风权限**
-- 安装：`./packaging/build.sh` 后打开 `packaging/build/SoundBridge.pkg`
-- 卸载：打开 `packaging/build/Uninstall.SoundBridge.pkg`
-- SpeakerAmp 不会被卸载，可随时作为回退
+[简体中文说明](README.zh-CN.md)
