@@ -77,8 +77,8 @@ HAL 插件只负责发布设备、实现音量 / 静音、维护 loopback ring�
 
 ## 系统要求
 
-- macOS 14.0 或更新
-- Apple Silicon（驱动按 `arm64` 构建）
+- macOS 13.0 或更新（Ventura+）
+- Universal 构建：Apple Silicon（`arm64`）和 Intel（`x86_64`）
 - Xcode 15/16 命令行工具（`swiftc`、`clang`、`codesign`、`pkgbuild`）
 - 一个物理 HDMI / DisplayPort 输出。测试环境：
   - MacBook Air M3，macOS 14.6
@@ -259,7 +259,6 @@ App 和插件使用 ad-hoc 签名，PKG 未签名。自用场景下可以右键�
 ## 已知限制
 
 - Ad-hoc 签名 / 未公证，面向个人使用
-- 没有 Intel 构建
 - M3 上开启 `AUMatrixReverb` 时 CPU 约 2.5%（略高于最初 2% 的目标），混响是
   主要成本
 - 空间感是凭听感对 SpeakerAmp 校准的，不是逐位一致
@@ -275,6 +274,8 @@ App 和插件使用 ad-hoc 签名，PKG 未签名。自用场景下可以右键�
 - 快捷键：录制、Carbon 注册、音量 ± / 静音动作和重启后持久化均已验证；
   未请求辅助功能权限
 - 登录项显示在「登录时打开」，卸载后移除
+- Universal App：arm64 原生、x86_64 在 Rosetta 下验证通过；x86_64 HAL
+  驱动还需要在 Intel 机器上实测
 - 卸载会删除驱动 / 设备 / 进程，并恢复系统音频
 - 不需要麦克风权限，没有橙色麦克风指示器
 

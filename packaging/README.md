@@ -16,6 +16,8 @@ packaging/build/SoundBridge.pkg             # App + HAL 插件
 packaging/build/Uninstall.SoundBridge.pkg   # 彻底卸载
 ```
 
+App 和 HAL 插件都是 universal（`arm64 + x86_64`），最低 macOS 13.0。
+
 ## 安装
 
 双击 `SoundBridge.pkg`，或：

@@ -84,8 +84,8 @@ The engine:
 
 ## Requirements
 
-- macOS 14.0 or newer
-- Apple Silicon (the driver is built for `arm64`)
+- macOS 13.0 or newer (Ventura+)
+- Universal build: Apple Silicon (`arm64`) and Intel (`x86_64`)
 - Xcode 15/16 command line tools (`swiftc`, `clang`, `codesign`, `pkgbuild`)
 - A physical HDMI / DisplayPort output. Tested with:
   - MacBook Air M3, macOS 14.6
@@ -276,7 +276,6 @@ right-click the package and choose Open, or use `sudo installer`.
 ## Known limitations
 
 - Ad-hoc signed / not notarized; intended for personal use
-- No Intel build
 - CPU around 2.5% on an M3 with AUMatrixReverb enabled (slightly above the 2%
   original target); the reverb is the dominant cost
 - The spatial effect is calibrated by ear against SpeakerAmp; it is not
@@ -295,6 +294,8 @@ right-click the package and choose Open, or use `sudo installer`.
 - Shortcuts: recording, Carbon registration, volume ±/mute actions and
   persistence verified; no Accessibility permission requested
 - Login item appears under **Open at Login** and is removed on uninstall
+- Universal app: arm64 native and x86_64 under Rosetta; the x86_64 HAL driver
+  still needs verification on Intel hardware
 - Uninstall removes driver/device/process and restores system audio
 - No microphone permission or orange microphone indicator
 

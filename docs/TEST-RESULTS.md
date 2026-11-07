@@ -374,3 +374,34 @@ UI / 功能验证：
 - 清除全部后 `defaults` 中不再有 `shortcut.*`
 - 截图：`docs/images/shortcuts.png`
 - 测试结束后已清空快捷键，默认保持未设置
+
+## 2026-11-07 · Universal 构建（v0.4）
+
+最低系统从 14.0 降到 **13.0**，App 和 HAL 插件改为 universal：
+
+```
+App:    x86_64 arm64   minos 13.0
+Driver: x86_64 arm64   minos 13.0
+```
+
+构建脚本：
+
+- App：`swiftc -target arm64-apple-macos13.0` 与
+  `swiftc -target x86_64-apple-macos13.0`，然后 `lipo`
+- 驱动：libASPL 和 `SoundBridge.cpp` 分别按两个架构编译/链接，然后 `lipo`
+- 两边都设置 `-mmacosx-version-min=13.0`
+
+验证：
+
+- `lipo -archs`：App / 驱动均为 `x86_64 arm64`
+- `vtool -show-build`：两个切片 `minos 13.0`
+- x86_64 App 切片在 Rosetta 下启动：
+  `arch -x86_64 .../SoundBridge --background`
+- 日志：`OUTPUT STARTED id=54`，默认输出切到 SoundBridge
+- 440 Hz 测试：ring 618–799
+- 原生 arm64 切片继续正常
+
+待 Intel 实测：
+
+- x86_64 HAL 驱动需要在 macOS 13 的 Intel / 黑苹果上安装验证
+- x86_64 App 只验证了引擎/音频路径，UI 未在 Rosetta 下逐项点击
