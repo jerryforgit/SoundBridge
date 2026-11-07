@@ -75,6 +75,8 @@ final class SpatialDSP {
     let bypass = AtomicBool(true)
     let limiterEnabled = AtomicBool(true)
     let thresholdDB = AtomicFloat(-1.0)
+    // 前置增益，dB。应用在 EQ 之前；正增益由 limiter 保护。
+    let gainDB = AtomicFloat(0.0)
 
     private let maxFrames = 4096
     private let channelCount = 2
@@ -133,6 +135,7 @@ final class SpatialDSP {
     private var apIndexR = [Int](repeating: 0, count: 2)
 
     private var mix: Float = 0.0
+    private var gainCurrent: Float = 1.0
 
     init() {
         dry = UnsafeMutablePointer<Float>.allocate(capacity: maxFrames * channelCount)
@@ -237,6 +240,19 @@ final class SpatialDSP {
     }
 
     private func processChunk(_ buffer: UnsafeMutablePointer<Float>, frames: Int) {
+        // Pre-amp gain: ramp within the chunk to avoid clicks while dragging.
+        let targetGain = powf(10.0, gainDB.value / 20.0)
+        if abs(targetGain - 1.0) > 0.000001 || abs(gainCurrent - 1.0) > 0.000001 {
+            let step = (targetGain - gainCurrent) / Float(frames)
+            var current = gainCurrent
+            for frame in 0..<frames {
+                current += step
+                buffer[frame * 2 + 0] *= current
+                buffer[frame * 2 + 1] *= current
+            }
+            gainCurrent = targetGain
+        }
+
         eq.process(buffer, frames: frames)
         memcpy(dry, buffer, frames * channelCount * MemoryLayout<Float>.size)
 

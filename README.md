@@ -29,6 +29,7 @@ physical route is resolved by **UID**, never by a cached `AudioObjectID`.
 - System volume keys, native OSD, Control Center and mute key work without
   Accessibility permissions or media-key interception
 - 10-band peaking EQ (50 Hz – 15 kHz, ±12 dB)
+- Pre-amp gain −15…+15 dB, applied before the EQ and protected by the limiter
 - Spatial effect: M/S widening, crossfeed, early reflections and Apple
   `AUMatrixReverb` (Large Hall), calibrated against SpeakerAmp Hall 50%
 - Look-ahead limiter
@@ -151,7 +152,8 @@ tccutil reset Microphone com.jerry.soundbridge
 - **Status menu**: volume slider, mute, control panel, spatial/EQ bypass,
   output device, default-output toggle, launch at login, language, engine log
 - **Control panel** (`Control panel…`):
-  - **Spatial**: preset, width, depth, reverb, A/B bypass, limiter
+  - **Spatial**: preset, width, depth, reverb, pre-amp gain, A/B bypass,
+    limiter
   - **Equalizer**: 10 vertical bands, presets, bypass, Flat reset
   - **About**: project/architecture notes
 - **Volume keys / OSD**: native, because the virtual device implements the
@@ -270,6 +272,9 @@ right-click the package and choose Open, or use `sudo installer`.
 - 10/10 clamshell sleep/wake recoveries with the shared-memory transport
 - 2-hour continuous playback: RSS stable at ~20 MB, no errors, ring median
   512 frames
+- Pre-amp gain: −6 dB measured 0.5012×, +6 dB measured 1.9953×; +15 dB is
+  limited to −1 dBFS by the look-ahead limiter
+- Login item appears under **Open at Login** and is removed on uninstall
 - Uninstall removes driver/device/process and restores system audio
 - No microphone permission or orange microphone indicator
 
@@ -290,6 +295,7 @@ SoundBridge 是一个 macOS 菜单栏音频工具：创建虚拟输出设备，�
 UID 唤醒重绑。
 
 - 插件与 App 分离：HAL 插件负责虚拟设备和共享内存，App 负责 DSP 和转发
+- 前置增益 −15…+15 dB（EQ 前应用，限幅器保护）
 - 唤醒按 UID 重绑，不缓存 `AudioObjectID`
 - 共享内存传输，**不需要麦克风权限**
 - 安装：`./packaging/build.sh` 后打开 `packaging/build/SoundBridge.pkg`

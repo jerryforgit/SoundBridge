@@ -9,9 +9,11 @@ final class SpatialWindowController: NSWindowController {
     private var widthSlider: NSSlider!
     private var depthSlider: NSSlider!
     private var reverbSlider: NSSlider!
+    private var gainSlider: NSSlider!
     private var widthValueLabel: NSTextField!
     private var depthValueLabel: NSTextField!
     private var reverbValueLabel: NSTextField!
+    private var gainValueLabel: NSTextField!
     private var bypassCheckbox: NSButton!
     private var limiterCheckbox: NSButton!
     private var thresholdSlider: NSSlider!
@@ -135,32 +137,48 @@ final class SpatialWindowController: NSWindowController {
         reverbSlider.isContinuous = true
         content.addSubview(reverbSlider)
 
+        gainValueLabel = NSTextField(labelWithString: "+0 dB")
+        gainValueLabel.frame = NSRect(x: 448, y: 168, width: 52, height: 20)
+        gainValueLabel.alignment = .right
+        gainValueLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        content.addSubview(gainValueLabel)
+
+        let gainLabel = NSTextField(labelWithString: L("增益", "Gain"))
+        gainLabel.frame = NSRect(x: 24, y: 168, width: 80, height: 20)
+        content.addSubview(gainLabel)
+
+        gainSlider = NSSlider(value: 0, minValue: -15, maxValue: 15,
+                              target: self, action: #selector(gainChanged(_:)))
+        gainSlider.frame = NSRect(x: 110, y: 164, width: 330, height: 24)
+        gainSlider.isContinuous = true
+        content.addSubview(gainSlider)
+
         bypassCheckbox = NSButton(checkboxWithTitle: L("旁路 (A/B)", "Bypass (A/B)"),
                                   target: self, action: #selector(bypassChanged(_:)))
-        bypassCheckbox.frame = NSRect(x: 24, y: 168, width: 180, height: 22)
+        bypassCheckbox.frame = NSRect(x: 24, y: 132, width: 180, height: 22)
         content.addSubview(bypassCheckbox)
 
-        let separator = NSBox(frame: NSRect(x: 24, y: 152, width: 472, height: 1))
+        let separator = NSBox(frame: NSRect(x: 24, y: 116, width: 472, height: 1))
         separator.boxType = .separator
         content.addSubview(separator)
 
         limiterCheckbox = NSButton(checkboxWithTitle: L("限幅器", "Limiter"),
                                    target: self, action: #selector(limiterChanged(_:)))
-        limiterCheckbox.frame = NSRect(x: 24, y: 120, width: 120, height: 22)
+        limiterCheckbox.frame = NSRect(x: 24, y: 92, width: 120, height: 22)
         content.addSubview(limiterCheckbox)
 
         let thresholdLabel = NSTextField(labelWithString: L("阈值", "Threshold"))
-        thresholdLabel.frame = NSRect(x: 140, y: 120, width: 80, height: 20)
+        thresholdLabel.frame = NSRect(x: 140, y: 92, width: 80, height: 20)
         content.addSubview(thresholdLabel)
 
         thresholdSlider = NSSlider(value: -1, minValue: -6, maxValue: 0,
                                    target: self, action: #selector(thresholdChanged(_:)))
-        thresholdSlider.frame = NSRect(x: 220, y: 116, width: 210, height: 24)
+        thresholdSlider.frame = NSRect(x: 220, y: 88, width: 210, height: 24)
         thresholdSlider.isContinuous = true
         content.addSubview(thresholdSlider)
 
         thresholdValueLabel = NSTextField(labelWithString: "-1.0 dB")
-        thresholdValueLabel.frame = NSRect(x: 438, y: 120, width: 62, height: 20)
+        thresholdValueLabel.frame = NSRect(x: 438, y: 92, width: 62, height: 20)
         thresholdValueLabel.alignment = .right
         thresholdValueLabel.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
         content.addSubview(thresholdValueLabel)
@@ -168,11 +186,13 @@ final class SpatialWindowController: NSWindowController {
         let note = NSTextField(wrappingLabelWithString: L(
             "Hall = AUMatrixReverb — Large Hall，Reverb 50（已按 SpeakerAmp ×0.5 校准）。\n" +
             "Width = M/S 展宽；Depth = crossfeed + 早期反射；Bypass 做 A/B。\n" +
+            "Gain 在 EQ 前应用（±15 dB），正增益由限幅器保护。\n" +
             "Hall (Schroeder) 是原来的近似版本，可随时切回。",
             "Hall = AUMatrixReverb — Large Hall, Reverb 50 (calibrated to SpeakerAmp ×0.5).\n" +
             "Width = M/S widening; Depth = crossfeed + early reflections; Bypass for A/B.\n" +
+            "Gain is applied before the EQ (±15 dB); positive gain is protected by the limiter.\n" +
             "Hall (Schroeder) is the previous approximation."))
-        note.frame = NSRect(x: 24, y: 24, width: 472, height: 56)
+        note.frame = NSRect(x: 24, y: 8, width: 472, height: 70)
         note.font = NSFont.systemFont(ofSize: 11)
         note.textColor = .secondaryLabelColor
         content.addSubview(note)
@@ -185,9 +205,11 @@ final class SpatialWindowController: NSWindowController {
         widthSlider.doubleValue = width
         depthSlider.doubleValue = depth
         reverbSlider.doubleValue = reverb
+        gainSlider.doubleValue = Double(dsp.gainDB.value)
         widthValueLabel.stringValue = "\(Int(width.rounded()))"
         depthValueLabel.stringValue = "\(Int(depth.rounded()))"
         reverbValueLabel.stringValue = "\(Int(reverb.rounded()))"
+        gainValueLabel.stringValue = String(format: "%+.0f dB", dsp.gainDB.value)
         bypassCheckbox.state = dsp.bypass.value ? .on : .off
         limiterCheckbox.state = dsp.limiterEnabled.value ? .on : .off
         thresholdSlider.doubleValue = Double(dsp.thresholdDB.value)
@@ -252,6 +274,14 @@ final class SpatialWindowController: NSWindowController {
         reverbValueLabel.stringValue = "\(Int(sender.doubleValue.rounded()))"
         defaults.set(sender.doubleValue, forKey: "spatial.reverb")
         markCustom()
+    }
+
+    @objc private func gainChanged(_ sender: NSSlider) {
+        let db = sender.doubleValue.rounded()
+        sender.doubleValue = db
+        dsp.gainDB.value = Float(db)
+        gainValueLabel.stringValue = String(format: "%+.0f dB", db)
+        defaults.set(db, forKey: "output.gainDB")
     }
 
     @objc private func bypassChanged(_ sender: NSButton) {

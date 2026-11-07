@@ -301,3 +301,43 @@ LaunchAgent 方案实测不符合预期：
 - 关闭 / 注销后 **登录时打开** 中不再显示 SoundBridge
 - **允许在后台** 中没有 SoundBridge
 - BTM 记录为 `Type: app`、`Bundle Identifier: com.jerry.soundbridge`
+
+## 2026-11-07 · 前置增益（v0.2）
+
+在「空间感」页加入 Gain 滑块：
+
+- 范围 −15…+15 dB，1 dB 步进
+- 在 EQ 之前应用；正增益由 look-ahead limiter 保护
+- 每个音频块内做增益渐变，拖动滑块不会产生 click
+- 保存到 `output.gainDB`，重启后恢复
+
+DSP 离线测试（440 Hz，0.1 幅度，limiter 关闭）：
+
+```
+0 dB  RMS 0.070669
+-6 dB RMS 0.035418  ratio 0.5012  (理论 0.5012)
++6 dB RMS 0.141002  ratio 1.9953  (理论 1.9953)
+```
+
+UI 测试：
+
+- 滑块显示 `+0 dB` / `+6 dB`
+- 辅助功能设置 `slider 4 = 6` 后，`defaults read output.gainDB` 为 6
+- 退出重开后滑块回到 6
+- 重置为 0 后设置写回 0
+- 截图：`docs/images/control-panel.png`
+
+limiter 保护测试（+15 dB，输入 0.5 幅度，阈值 −1 dBFS）：
+
+```
+gain 0   RMS 0.3533  peak 0.5000
+gain +15 RMS 0.6300  peak 0.8915  (阈值 0.8913，overshoot 0.0002)
+```
+
+v0.2 安装后验证：
+
+- App / 插件版本均为 0.2
+- 默认输出 SoundBridge，OUTPUT STARTED id=54
+- Gain 滑块显示 `+0 dB`，`output.gainDB = 0`
+- 登录项 `--login status` = enabled
+- 440 Hz 测试 ring 572–646

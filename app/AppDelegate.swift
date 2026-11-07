@@ -495,6 +495,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let d = defaults
         dsp.width.value = Float((d.object(forKey: "spatial.width") as? Double ?? 0.0) / 100.0)
         dsp.depth.value = Float((d.object(forKey: "spatial.depth") as? Double ?? 0.0) / 100.0)
+        dsp.gainDB.value = Float(d.double(forKey: "output.gainDB"))
 
         if d.object(forKey: "spatial.reverb") != nil {
             dsp.reverb.value = Float(d.double(forKey: "spatial.reverb") / 100.0)
